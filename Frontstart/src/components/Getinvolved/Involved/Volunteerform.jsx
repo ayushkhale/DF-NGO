@@ -15,6 +15,8 @@ const Volunteerform = () => {
     });
 
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false); // State for loading
+    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
 
     // Handle form input changes
     const handleInputChange = (e) => {
@@ -55,8 +57,11 @@ const Volunteerform = () => {
         const validationErrors = validateForm();
         setErrors(validationErrors);
 
+        
+
         // If there are no validation errors, submit the form
         if (Object.keys(validationErrors).length === 0) {
+            setLoading(true); // Show loader on submission
             const formPayload = new FormData();
             // Append form fields to FormData
             for (let key in formData) {
@@ -82,12 +87,21 @@ const Volunteerform = () => {
                     About_You: '',
                     Image: null, // Reset image path
                 });
+
+                setLoading(false); // Hide loader
+                setModalVisible(true); // Show success modal
+
                 setErrors({}); // Reset errors
             })
             .catch(error => {
                 console.error("Error submitting form:", error);
             });
         }
+    };
+
+    // Close success modal
+       const closeModal = () => {
+        setModalVisible(false);
     };
 
     return (
@@ -225,12 +239,29 @@ const Volunteerform = () => {
                         <button 
                             type="submit" 
                             className="bg-red-600 text-white px-4 py-2 rounded-md w-full sm:col-span-2"
+                            disabled={loading} // Disable the button during loading
                         >
-                            Submit
+                            {loading ? 'Submitting...' : 'Submit'}
                         </button>
                     </form>
                 </div>
             </section>
+            
+            {/* Success Modal */}
+            {modalVisible && (
+                <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded-lg text-center max-w-sm w-full">
+                        <h3 className="text-2xl font-bold text-green-600 mb-4">Form Submitted Successfully!</h3>
+                        <p className="text-gray-700 mb-4">Thank you for your submission. We will contact you soon.</p>
+                        <button 
+                            onClick={closeModal}
+                            className="bg-red-600 text-white px-6 py-2 rounded-md"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
