@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 
 const Volunteerform = () => {
+    // State management for form fields
     const [formData, setFormData] = useState({
         Name: '',
         Fathers_Name: '',
         Mobile_No: '',
         Email: '',
         Qualification: '',
-        Work_Experience: '',
-        Address: '',
-        About_You: '',
-        Image: null,
+        Work_Experience: '', // Added field for Working Experience
+        Address: '', // Replacing State with Address
+        About_You: '', // Added field for About_You
+        Image: null, // Initialize Image as null
     });
 
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false); // State for loader
-    const [successModal, setSuccessModal] = useState(false); // State for success modal
 
+    // Handle form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({
@@ -25,14 +25,16 @@ const Volunteerform = () => {
         });
     };
 
+    // Handle image input change
     const handleImageChange = (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files[0]; // Get the file
         setFormData({
             ...formData,
-            Image: file,
+            Image: file, // Set the image file
         });
     };
 
+    // Form validation
     const validateForm = () => {
         let errors = {};
         if (!formData.Name) errors.Name = 'Name is required';
@@ -40,25 +42,27 @@ const Volunteerform = () => {
         if (!formData.Mobile_No) errors.Mobile_No = 'Mobile Number is required';
         if (!formData.Email) errors.Email = 'Email is required';
         if (!formData.Qualification) errors.Qualification = 'Qualification is required';
-        if (!formData.Work_Experience) errors.Work_Experience = 'Working Experience is required';
-        if (!formData.Address) errors.Address = 'Address is required';
-        if (!formData.About_You) errors.About_You = 'About you is required';
-        if (!formData.Image) errors.Image = 'Image is required';
+        if (!formData.Work_Experience) errors.Work_Experience = 'Working Experience is required'; // Validate working experience
+        if (!formData.Address) errors.Address = 'Address is required'; // Validate Address
+        if (!formData.About_You) errors.About_You = 'About you is required'; // Validate About_You
+        if (!formData.Image) errors.Image = 'Image is required'; // Validate image
         return errors;
     };
 
+    // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
         const validationErrors = validateForm();
         setErrors(validationErrors);
 
+        // If there are no validation errors, submit the form
         if (Object.keys(validationErrors).length === 0) {
-            setLoading(true); // Show loader
             const formPayload = new FormData();
+            // Append form fields to FormData
             for (let key in formData) {
                 formPayload.append(key, formData[key]);
             }
-
+            // API call to submit form data
             fetch('https://dakshifoundation.in/submit', {
                 method: 'POST',
                 body: formPayload,
@@ -66,10 +70,7 @@ const Volunteerform = () => {
             .then(response => response.json())
             .then(data => {
                 console.log("Form Data Submitted:", data);
-                setLoading(false); // Hide loader
-                setSuccessModal(true); // Show success modal
-
-                // Reset form fields
+                // Reset form fields after successful submission
                 setFormData({
                     Name: '',
                     Fathers_Name: '',
@@ -79,45 +80,27 @@ const Volunteerform = () => {
                     Work_Experience: '',
                     Address: '',
                     About_You: '',
-                    Image: null,
+                    Image: null, // Reset image path
                 });
-                setErrors({});
+                setErrors({}); // Reset errors
             })
             .catch(error => {
                 console.error("Error submitting form:", error);
-                setLoading(false); // Hide loader in case of error
             });
         }
     };
 
-    const closeModal = () => {
-        setSuccessModal(false); // Close success modal
-    };
-
     return (
         <div>
-            {/* Modal for successful submission */}
-            {successModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
-                    <div className="bg-white p-6 rounded-lg text-center max-w-sm w-full">
-                        <h2 className="text-2xl font-bold text-green-600">Form Submitted Successfully!</h2>
-                        <p className="text-lg text-gray-700 mt-4">Thank you for your submission. We will get in touch soon!</p>
-                        <button
-                            onClick={closeModal}
-                            className="mt-6 bg-red-600 text-white px-4 py-2 rounded-md"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Loader */}
-            {loading && (
-                <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
-                    <div className="text-white font-bold">Loading...</div>
-                </div>
-            )}
+            {/* Introduction Section */}
+            <section className="container mx-auto px-10 py-10">
+                <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl text-red-600 font-bold text-center px-5">
+                    Become A Volunteer
+                </h2>
+                <p className="text-xl sm:text-2xl md:text-3xl text-gray-700 mt-4 text-center">
+                    Join us in making a meaningful difference.
+                </p>
+            </section>
 
             {/* Form Section */}
             <section className="">
@@ -221,8 +204,7 @@ const Volunteerform = () => {
                                 name="Image" 
                                 onChange={handleImageChange} 
                                 className="border border-gray-300 p-3 rounded-md w-full"
-                            />
-                            <p className='px-4 text-red-400'>Upload your photograph</p>
+                            />  <p className='px-4 text-red-400'>Upload your photograph</p>
                             {errors.Image && <span className="text-red-500 text-sm">{errors.Image}</span>}
                         </div>
 
@@ -237,6 +219,7 @@ const Volunteerform = () => {
                             />
                             {errors.About_You && <span className="text-red-500 text-sm">{errors.About_You}</span>}
                         </div>
+
 
                         {/* Submit Button */}
                         <button 
