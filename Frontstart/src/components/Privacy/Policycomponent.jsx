@@ -2,8 +2,8 @@ import React from 'react'
 
 const Policycomponent = () => {
     return (
-        <div className="p-4">
-            <div className="justify-center mx-10 my-12">
+        <div>
+            <div className="justify-center m-5 md:mx-10 md:my-12">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl text-red-600 font-bold">
                     Privacy Policy
                 </h2>
