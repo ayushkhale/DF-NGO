@@ -131,7 +131,7 @@ const Donateform = () => {
         }
   
         const data = await response.json();
-        const receipt = data.receipt_no; // Extract receipt number from the response
+        const receipt = data.receipt; // Extract receipt number from the response
         const currentDate = new Date().toLocaleDateString(); // Get current date in readable format
   
         const options = {
