@@ -63,7 +63,7 @@ const Donateform = () => {
     return errors;
   };
 
-  const generateCertificate = async () => {
+  const generateCertificate = async (formData, receipt, date) => {
     setIsLoading(true); // Show loader
     try {
       const templatePdfBytes = await fetch(templatePdf).then((res) => res.arrayBuffer());
@@ -94,8 +94,8 @@ const Donateform = () => {
       drawCenteredText(`Amount: Rs.${amount}`, startY - lineSpacing * 2);
       drawCenteredText(`Purpose of Donation: ${toward}`, startY - lineSpacing * 3);
       drawCenteredText(`Remarks: ${remark}`, startY - lineSpacing * 4);
-      drawCenteredText(`Receipt No: 123456`, startY - lineSpacing * 5);
-      drawCenteredText(`Date: 01-09-2003`, startY - lineSpacing * 6);
+      drawCenteredText(`Receipt No: ${receipt}`, startY - lineSpacing * 5);
+      drawCenteredText(`Date: ${date}`, startY - lineSpacing * 6);
   
       const modifiedPdfBytes = await pdfDoc.save();
       const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
@@ -110,85 +110,85 @@ const Donateform = () => {
     }
   };
   
-
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const validationErrors = validateForm();
-  setErrors(validationErrors);
-
-  if (Object.keys(validationErrors).length === 0) {
-    setIsLoading(true); // Show loader
-    try {
-      const response = await fetch("https://dakshifoundation.in/create-donation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Something went wrong with the donation request.");
-      }
-
-      const data = await response.json();
-      const options = {
-        key: "rzp_test_bVnwqq5GvuvOi4",
-        order_id: data.order.id,
-        amount: data.order.amount,
-        currency: "INR",
-        handler: function (response) {
-          const paymentId = response.razorpay_payment_id;
-          const orderId = response.razorpay_order_id;
-          const signature = response.razorpay_signature;
-
-          fetch('https://dakshifoundation.in/payment-verification', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              payment_id: paymentId,
-              order_id: orderId,
-              signature: signature,
-              data: formData
-            }),
-          })
-            .then(response => response.json())
-            .then(data => {
-              generateCertificate(formData);
-              setModalMessage("Payment Successful! Your donation receipt is being generated.");
-              setIsModalOpen(true); // Open the modal
-            })
-            .catch((error) => {
-              console.error('Error:', error);
-            });
-        },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-
-      console.log("Donation submitted successfully:", data);
-      setFormData({
-        Name: "",
-        Email: "",
-        Mobile_No: "",
-        Address: "",
-        AdharId: "",
-        Donation: "",
-        Toward: "",
-        Remark: "",
-      });
-    } catch (error) {
-      console.error("Error during donation submission:", error);
-      alert("There was an error processing your donation. Please try again later.");
-    } finally {
-      setIsLoading(false); // Hide loader
-    }
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
   
-};
+    if (Object.keys(validationErrors).length === 0) {
+      setIsLoading(true); // Show loader
+      try {
+        const response = await fetch("https://dakshifoundation.in/create-donation", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (!response.ok) {
+          throw new Error("Something went wrong with the donation request.");
+        }
+  
+        const data = await response.json();
+        const receipt = data.receipt_no; // Extract receipt number from the response
+        const currentDate = new Date().toLocaleDateString(); // Get current date in readable format
+  
+        const options = {
+          key: "rzp_test_bVnwqq5GvuvOi4",
+          order_id: data.order.id,
+          amount: data.order.amount,
+          currency: "INR",
+          handler: function (response) {
+            const paymentId = response.razorpay_payment_id;
+            const orderId = response.razorpay_order_id;
+            const signature = response.razorpay_signature;
+  
+            fetch('https://dakshifoundation.in/payment-verification', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                payment_id: paymentId,
+                order_id: orderId,
+                signature: signature,
+                data: formData
+              }),
+            })
+              .then(response => response.json())
+              .then(data => {
+                generateCertificate(formData, receipt, currentDate); // Pass receipt and current date
+                setModalMessage("Payment Successful! Your donation receipt is being generated.");
+                setIsModalOpen(true); // Open the modal
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+          },
+        };
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+  
+        console.log("Donation submitted successfully:", data);
+        setFormData({
+          Name: "",
+          Email: "",
+          Mobile_No: "",
+          Address: "",
+          AdharId: "",
+          Donation: "",
+          Toward: "",
+          Remark: "",
+        });
+      } catch (error) {
+        console.error("Error during donation submission:", error);
+        alert("There was an error processing your donation. Please try again later.");
+      } finally {
+        setIsLoading(false); // Hide loader
+      }
+    }
+  };  
 
 
   
